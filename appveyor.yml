@@ -26,9 +26,6 @@ nuget:
   disable_publish_on_pr: true
 
 before_build:
-  - cmd: DiagTools\clockres.exe -accepteula
-  - cmd: reg.exe ADD "HKCU\Software\Sysinternals\Coreinfo" /v EulaAccepted /t REG_DWORD /d 1 /f
-  - cmd: DiagTools\coreinfo.exe
   - cmd: dotnet --info
   - cmd: dotnet restore ./Cassandra.GlobalTimestamp.sln --verbosity minimal
 
