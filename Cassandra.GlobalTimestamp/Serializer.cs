@@ -5,7 +5,7 @@ using JetBrains.Annotations;
 
 namespace SkbKontur.Cassandra.GlobalTimestamp
 {
-    internal class Serializer
+    internal static class Serializer
     {
         public static long Deserialize([NotNull] byte[] bytes)
         {

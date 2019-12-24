@@ -18,7 +18,7 @@ namespace SkbKontur.Cassandra.GlobalTimestamp
         [NotNull]
         public Timestamp UpdateNowTimestamp()
         {
-            var prevGlobalTicks = maxTicksHolder.GetMaxTicks(globalTicksKey) ?? 0;
+            var prevGlobalTicks = maxTicksHolder.GetMaxTicks(globalTicksKey) ?? Timestamp.MinValue.Ticks;
             var newGlobalTicks = Math.Max(prevGlobalTicks + PreciseTimestampGenerator.TicksPerMicrosecond, Timestamp.Now.Ticks);
             maxTicksHolder.UpdateMaxTicks(globalTicksKey, newGlobalTicks);
             return new Timestamp(newGlobalTicks);
