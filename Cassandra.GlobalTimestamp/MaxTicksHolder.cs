@@ -10,6 +10,7 @@ using SkbKontur.Cassandra.ThriftClient.Connections;
 
 namespace SkbKontur.Cassandra.GlobalTimestamp
 {
+    [PublicAPI]
     public class MaxTicksHolder
     {
         public MaxTicksHolder(ISerializer serializer, IColumnFamilyConnection cfConnection)
@@ -34,7 +35,7 @@ namespace SkbKontur.Cassandra.GlobalTimestamp
                     Name = ticksColumnName,
                     Timestamp = ticks,
                     Value = serializer.Serialize(ticks),
-                    TTL = null,
+                    TTL = null
                 });
             persistedMaxTicks.AddOrUpdate(key, ticks, (k, oldMaxTicks) => Math.Max(ticks, oldMaxTicks));
         }

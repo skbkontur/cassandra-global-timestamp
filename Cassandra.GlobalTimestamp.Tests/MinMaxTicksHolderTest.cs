@@ -3,64 +3,27 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 
-using GroBuf;
-using GroBuf.DataMembersExtracters;
-
 using MoreLinq;
 
 using NUnit.Framework;
 
 using SkbKontur.Cassandra.GlobalTimestamp;
-using SkbKontur.Cassandra.ThriftClient.Abstractions;
-using SkbKontur.Cassandra.ThriftClient.Clusters;
-using SkbKontur.Cassandra.ThriftClient.Scheme;
 using SkbKontur.Cassandra.TimeBasedUuid;
 
 namespace Cassandra.GlobalTimestamp.Tests
 {
-    [TestFixture]
     public class MinMaxTicksHolderTest
     {
         [OneTimeSetUp]
-        public void TestFixtureSetUp()
+        public void OneTimeSetUp()
         {
-            var cassandraCluster = new CassandraCluster(SingleCassandraNodeSetUpFixture.Node.CreateSettings(), Logger.Instance);
+            var minTicksConnection = SetUpFixture.GetMinTicksConnection();
+            minTicksHolder1 = new MinTicksHolder(SetUpFixture.Serializer, minTicksConnection);
+            minTicksHolder2 = new MinTicksHolder(SetUpFixture.Serializer, minTicksConnection);
 
-            const string ksName = "GlobalTimestampTests";
-            cassandraCluster.ActualizeKeyspaces(new[]
-                {
-                    new KeyspaceScheme
-                        {
-                            Name = ksName,
-                            Configuration = new KeyspaceConfiguration
-                                {
-                                    ReplicationStrategy = SimpleReplicationStrategy.Create(replicationFactor : 1),
-                                    ColumnFamilies = new[]
-                                        {
-                                            new ColumnFamily
-                                                {
-                                                    Name = minTicksCfName,
-                                                    CompactionStrategy = CompactionStrategy.LeveledCompactionStrategy(sstableSizeInMb : 160),
-                                                    Caching = ColumnFamilyCaching.All
-                                                },
-                                            new ColumnFamily
-                                                {
-                                                    Name = maxTicksCfName,
-                                                    CompactionStrategy = CompactionStrategy.LeveledCompactionStrategy(sstableSizeInMb : 160),
-                                                    Caching = ColumnFamilyCaching.KeysOnly
-                                                }
-                                        }
-                                }
-                        },
-                });
-
-            var serializer = new Serializer(new AllPropertiesExtractor(), customSerializerCollection : null, GroBufOptions.MergeOnRead);
-            var minTicksConnection = cassandraCluster.RetrieveColumnFamilyConnection(ksName, minTicksCfName);
-            minTicksHolder1 = new MinTicksHolder(serializer, minTicksConnection);
-            minTicksHolder2 = new MinTicksHolder(serializer, minTicksConnection);
-            var maxTicksConnection = cassandraCluster.RetrieveColumnFamilyConnection(ksName, maxTicksCfName);
-            maxTicksHolder1 = new MaxTicksHolder(serializer, maxTicksConnection);
-            maxTicksHolder2 = new MaxTicksHolder(serializer, maxTicksConnection);
+            var maxTicksConnection = SetUpFixture.GetMaxTicksConnection();
+            maxTicksHolder1 = new MaxTicksHolder(SetUpFixture.Serializer, maxTicksConnection);
+            maxTicksHolder2 = new MaxTicksHolder(SetUpFixture.Serializer, maxTicksConnection);
         }
 
         [SetUp]
@@ -76,6 +39,9 @@ namespace Cassandra.GlobalTimestamp.Tests
         public void MinTicks()
         {
             var ticks = Timestamp.Now.Ticks;
+            var otherKey = Guid.NewGuid().ToString();
+            minTicksHolder1.UpdateMinTicks(otherKey, ticks - TimeSpan.FromHours(1).Ticks);
+
             var key = Guid.NewGuid().ToString();
             Assert.That(minTicksHolder1.GetMinTicks(key), Is.Null);
             Assert.That(minTicksHolder2.GetMinTicks(key), Is.Null);
@@ -90,6 +56,9 @@ namespace Cassandra.GlobalTimestamp.Tests
         public void MaxTicks()
         {
             var ticks = Timestamp.Now.Ticks;
+            var otherKey = Guid.NewGuid().ToString();
+            maxTicksHolder1.UpdateMaxTicks(otherKey, ticks + TimeSpan.FromHours(1).Ticks);
+
             var key = Guid.NewGuid().ToString();
             Assert.That(maxTicksHolder1.GetMaxTicks(key), Is.Null);
             Assert.That(maxTicksHolder2.GetMaxTicks(key), Is.Null);
@@ -110,7 +79,7 @@ namespace Cassandra.GlobalTimestamp.Tests
             var values = Enumerable.Range(0, valuesCount).Select(x => ThreadLocalRandom.Instance.Next(valuesCount)).ToList();
             var valuesByThread = values.Batch(countPerThread, Enumerable.ToArray).ToArray();
             var threads = new List<Thread>();
-            var startSignal = new ManualResetEvent(false);
+            var startSignal = new ManualResetEvent(initialState : false);
             for (var i = 0; i < threadsCount; i++)
             {
                 var threadIndex = i;
@@ -135,9 +104,6 @@ namespace Cassandra.GlobalTimestamp.Tests
             Assert.That(maxTicksHolder1.GetMaxTicks(key), Is.EqualTo(values.Max()));
             Assert.That(maxTicksHolder2.GetMaxTicks(key), Is.EqualTo(values.Max()));
         }
-
-        private const string minTicksCfName = "MinMaxTicksHolderTest_MinTicks";
-        private const string maxTicksCfName = "MinMaxTicksHolderTest_MaxTicks";
 
         private MinTicksHolder minTicksHolder1, minTicksHolder2;
         private MaxTicksHolder maxTicksHolder1, maxTicksHolder2;

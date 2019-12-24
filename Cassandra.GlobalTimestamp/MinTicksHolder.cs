@@ -10,6 +10,7 @@ using SkbKontur.Cassandra.ThriftClient.Connections;
 
 namespace SkbKontur.Cassandra.GlobalTimestamp
 {
+    [PublicAPI]
     public class MinTicksHolder
     {
         public MinTicksHolder(ISerializer serializer, IColumnFamilyConnection minTicksConnection)
@@ -34,7 +35,7 @@ namespace SkbKontur.Cassandra.GlobalTimestamp
                     Name = ticksColumnName,
                     Timestamp = long.MaxValue - ticks,
                     Value = serializer.Serialize(long.MaxValue - ticks),
-                    TTL = null,
+                    TTL = null
                 });
             persistedMinTicks.AddOrUpdate(key, ticks, (k, oldMinTicks) => Math.Min(ticks, oldMinTicks));
         }
