@@ -1,9 +1,6 @@
 using System;
 using System.IO;
 
-using GroBuf;
-using GroBuf.DataMembersExtracters;
-
 using NUnit.Framework;
 
 using SkbKontur.Cassandra.Local;
@@ -17,8 +14,6 @@ namespace Cassandra.GlobalTimestamp.Tests
     [SetUpFixture]
     public class SetUpFixture
     {
-        public static readonly ISerializer Serializer = new Serializer(new AllPropertiesExtractor(), customSerializerCollection : null, GroBufOptions.MergeOnRead);
-
         public static IColumnFamilyConnection GetMinTicksConnection()
         {
             return cassandraCluster.RetrieveColumnFamilyConnection(ksName, minTicksCfName);

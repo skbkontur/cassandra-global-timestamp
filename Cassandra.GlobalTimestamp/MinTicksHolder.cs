@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Concurrent;
 
-using GroBuf;
-
 using JetBrains.Annotations;
 
 using SkbKontur.Cassandra.ThriftClient.Abstractions;
@@ -13,9 +11,8 @@ namespace SkbKontur.Cassandra.GlobalTimestamp
     [PublicAPI]
     public class MinTicksHolder
     {
-        public MinTicksHolder(ISerializer serializer, IColumnFamilyConnection minTicksConnection)
+        public MinTicksHolder(IColumnFamilyConnection minTicksConnection)
         {
-            this.serializer = serializer;
             this.minTicksConnection = minTicksConnection;
         }
 
@@ -23,7 +20,7 @@ namespace SkbKontur.Cassandra.GlobalTimestamp
         {
             if (!minTicksConnection.TryGetColumn(key, ticksColumnName, out var column))
                 return null;
-            return long.MaxValue - serializer.Deserialize<long>(column.Value);
+            return Serializer.Deserialize(column.Value);
         }
 
         public void UpdateMinTicks([NotNull] string key, long ticks)
@@ -34,7 +31,7 @@ namespace SkbKontur.Cassandra.GlobalTimestamp
                 {
                     Name = ticksColumnName,
                     Timestamp = long.MaxValue - ticks,
-                    Value = serializer.Serialize(long.MaxValue - ticks),
+                    Value = Serializer.Serialize(ticks),
                     TTL = null
                 });
             persistedMinTicks.AddOrUpdate(key, ticks, (k, oldMinTicks) => Math.Min(ticks, oldMinTicks));
@@ -45,8 +42,7 @@ namespace SkbKontur.Cassandra.GlobalTimestamp
             persistedMinTicks.Clear();
         }
 
-        private const string ticksColumnName = "Ticks";
-        private readonly ISerializer serializer;
+        private const string ticksColumnName = "ticks";
         private readonly IColumnFamilyConnection minTicksConnection;
         private readonly ConcurrentDictionary<string, long> persistedMinTicks = new ConcurrentDictionary<string, long>();
     }

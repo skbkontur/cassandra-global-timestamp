@@ -12,8 +12,7 @@ namespace Cassandra.GlobalTimestamp.Tests
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
-            var maxTicksConnection = SetUpFixture.GetMaxTicksConnection();
-            globalTime = new GlobalTime(SetUpFixture.Serializer, maxTicksConnection);
+            globalTime = new GlobalTime(SetUpFixture.GetMaxTicksConnection());
         }
 
         [SetUp]

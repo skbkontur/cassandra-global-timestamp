@@ -18,12 +18,12 @@ namespace Cassandra.GlobalTimestamp.Tests
         public void OneTimeSetUp()
         {
             var minTicksConnection = SetUpFixture.GetMinTicksConnection();
-            minTicksHolder1 = new MinTicksHolder(SetUpFixture.Serializer, minTicksConnection);
-            minTicksHolder2 = new MinTicksHolder(SetUpFixture.Serializer, minTicksConnection);
+            minTicksHolder1 = new MinTicksHolder(minTicksConnection);
+            minTicksHolder2 = new MinTicksHolder(minTicksConnection);
 
             var maxTicksConnection = SetUpFixture.GetMaxTicksConnection();
-            maxTicksHolder1 = new MaxTicksHolder(SetUpFixture.Serializer, maxTicksConnection);
-            maxTicksHolder2 = new MaxTicksHolder(SetUpFixture.Serializer, maxTicksConnection);
+            maxTicksHolder1 = new MaxTicksHolder(maxTicksConnection);
+            maxTicksHolder2 = new MaxTicksHolder(maxTicksConnection);
         }
 
         [SetUp]

@@ -1,7 +1,5 @@
 using System;
 
-using GroBuf;
-
 using JetBrains.Annotations;
 
 using SkbKontur.Cassandra.ThriftClient.Connections;
@@ -12,9 +10,9 @@ namespace SkbKontur.Cassandra.GlobalTimestamp
     [PublicAPI]
     public class GlobalTime : IGlobalTime
     {
-        public GlobalTime(ISerializer serializer, IColumnFamilyConnection cfConnection)
+        public GlobalTime(IColumnFamilyConnection cfConnection)
         {
-            maxTicksHolder = new MaxTicksHolder(serializer, cfConnection);
+            maxTicksHolder = new MaxTicksHolder(cfConnection);
         }
 
         [NotNull]
@@ -31,7 +29,7 @@ namespace SkbKontur.Cassandra.GlobalTimestamp
             maxTicksHolder.ResetInMemoryState();
         }
 
-        private const string globalTicksKey = "GlobalTicks";
+        private const string globalTicksKey = "global_ticks";
         private readonly MaxTicksHolder maxTicksHolder;
     }
 }

@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Concurrent;
 
-using GroBuf;
-
 using JetBrains.Annotations;
 
 using SkbKontur.Cassandra.ThriftClient.Abstractions;
@@ -13,9 +11,8 @@ namespace SkbKontur.Cassandra.GlobalTimestamp
     [PublicAPI]
     public class MaxTicksHolder
     {
-        public MaxTicksHolder(ISerializer serializer, IColumnFamilyConnection cfConnection)
+        public MaxTicksHolder(IColumnFamilyConnection cfConnection)
         {
-            this.serializer = serializer;
             this.cfConnection = cfConnection;
         }
 
@@ -23,7 +20,7 @@ namespace SkbKontur.Cassandra.GlobalTimestamp
         {
             if (!cfConnection.TryGetColumn(key, ticksColumnName, out var column))
                 return null;
-            return serializer.Deserialize<long>(column.Value);
+            return Serializer.Deserialize(column.Value);
         }
 
         public void UpdateMaxTicks([NotNull] string key, long ticks)
@@ -34,7 +31,7 @@ namespace SkbKontur.Cassandra.GlobalTimestamp
                 {
                     Name = ticksColumnName,
                     Timestamp = ticks,
-                    Value = serializer.Serialize(ticks),
+                    Value = Serializer.Serialize(ticks),
                     TTL = null
                 });
             persistedMaxTicks.AddOrUpdate(key, ticks, (k, oldMaxTicks) => Math.Max(ticks, oldMaxTicks));
@@ -45,8 +42,7 @@ namespace SkbKontur.Cassandra.GlobalTimestamp
             persistedMaxTicks.Clear();
         }
 
-        private const string ticksColumnName = "Ticks";
-        private readonly ISerializer serializer;
+        private const string ticksColumnName = "ticks";
         private readonly IColumnFamilyConnection cfConnection;
         private readonly ConcurrentDictionary<string, long> persistedMaxTicks = new ConcurrentDictionary<string, long>();
     }
