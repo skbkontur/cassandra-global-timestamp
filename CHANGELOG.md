@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.0.11 - 2021.03.13
+- Update dependencies.
+- Run tests against net5.0 tfm.
+
 ## v1.0.8 - 2019.12.24
 - Extract this package from [Cassandra.Primitives](https://github.com/skbkontur/cassandra-primitives/tree/v2.2-release/CassandraPrimitives/Storages/GlobalTicksHolder).
 - Use simple utf-8 serializer instead of GroBuf.

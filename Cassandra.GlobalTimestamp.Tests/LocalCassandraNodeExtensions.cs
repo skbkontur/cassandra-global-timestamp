@@ -41,6 +41,7 @@ namespace Cassandra.GlobalTimestamp.Tests
             public int FierceTimeout { get; set; }
             public TimeSpan? ConnectionIdleTimeout { get; set; }
             public bool EnableMetrics { get; set; }
+            public Credentials Credentials { get; }
         }
     }
 }

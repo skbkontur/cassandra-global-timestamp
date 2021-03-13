@@ -7,7 +7,7 @@ using SkbKontur.Cassandra.Local;
 using SkbKontur.Cassandra.ThriftClient.Abstractions;
 using SkbKontur.Cassandra.ThriftClient.Clusters;
 using SkbKontur.Cassandra.ThriftClient.Connections;
-using SkbKontur.Cassandra.ThriftClient.Scheme;
+using SkbKontur.Cassandra.ThriftClient.Schema;
 
 namespace Cassandra.GlobalTimestamp.Tests
 {
@@ -39,10 +39,10 @@ namespace Cassandra.GlobalTimestamp.Tests
             cassandraNode.Restart(timeout : TimeSpan.FromMinutes(1));
 
             cassandraCluster = new CassandraCluster(cassandraNode.CreateSettings(), Logger.Instance);
-
-            cassandraCluster.ActualizeKeyspaces(new[]
+            var cassandraSchemaActualizer = new CassandraSchemaActualizer(cassandraCluster, null, Logger.Instance);
+            cassandraSchemaActualizer.ActualizeKeyspaces(new[]
                 {
-                    new KeyspaceScheme
+                    new KeyspaceSchema
                         {
                             Name = ksName,
                             Configuration = new KeyspaceConfiguration
@@ -65,7 +65,7 @@ namespace Cassandra.GlobalTimestamp.Tests
                                         }
                                 }
                         },
-                });
+                }, changeExistingKeyspaceMetadata : false);
         }
 
         [OneTimeTearDown]
