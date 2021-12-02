@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.0.13 - 2021.12.02
+- Update dependencies.
+- Run tests against net6.0 tfm.
+
 ## v1.0.11 - 2021.03.13
 - Update dependencies.
 - Run tests against net5.0 tfm.
