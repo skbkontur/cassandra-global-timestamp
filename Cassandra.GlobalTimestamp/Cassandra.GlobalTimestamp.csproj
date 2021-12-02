@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="SkbKontur.Cassandra.ThriftClient" Version="2.4.25" />
+    <PackageReference Include="SkbKontur.Cassandra.ThriftClient" Version="2.4.29" />
   </ItemGroup>
 
 </Project>
