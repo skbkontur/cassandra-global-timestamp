@@ -1,20 +1,19 @@
 using System;
 using System.Net;
 
-using SkbKontur.Cassandra.Local;
 using SkbKontur.Cassandra.ThriftClient.Abstractions;
 using SkbKontur.Cassandra.ThriftClient.Clusters;
 
 namespace Cassandra.GlobalTimestamp.Tests
 {
-    public static class LocalCassandraNodeExtensions
+    public static class LocalCassandraSettingsFactory
     {
-        public static SingleNodeCassandraClusterSettings CreateSettings(this LocalCassandraNode node)
+        public static SingleNodeCassandraClusterSettings CreateSettings()
         {
-            var thriftEndpoint = new IPEndPoint(IPAddress.Parse(node.RpcAddress), node.RpcPort);
+            var thriftEndpoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 9160);
             return new SingleNodeCassandraClusterSettings
                 {
-                    ClusterName = node.ClusterName,
+                    ClusterName = "TestCluster",
                     ReadConsistencyLevel = ConsistencyLevel.QUORUM,
                     WriteConsistencyLevel = ConsistencyLevel.QUORUM,
                     Endpoints = new[] {thriftEndpoint},

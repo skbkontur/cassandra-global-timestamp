@@ -1,9 +1,5 @@
-using System;
-using System.IO;
-
 using NUnit.Framework;
 
-using SkbKontur.Cassandra.Local;
 using SkbKontur.Cassandra.ThriftClient.Abstractions;
 using SkbKontur.Cassandra.ThriftClient.Clusters;
 using SkbKontur.Cassandra.ThriftClient.Connections;
@@ -27,18 +23,7 @@ namespace Cassandra.GlobalTimestamp.Tests
         [OneTimeSetUp]
         public static void SetUp()
         {
-            var templateDirectory = Path.Combine(FindCassandraTemplateDirectory(AppDomain.CurrentDomain.BaseDirectory), @"v3.11.x");
-            var deployDirectory = Path.Combine(Path.GetTempPath(), "deployed_cassandra_v3.11.x");
-            cassandraNode = new LocalCassandraNode(templateDirectory, deployDirectory)
-                {
-                    RpcPort = 9360,
-                    CqlPort = 9343,
-                    JmxPort = 7399,
-                    GossipPort = 7400,
-                };
-            cassandraNode.Restart(timeout : TimeSpan.FromMinutes(1));
-
-            cassandraCluster = new CassandraCluster(cassandraNode.CreateSettings(), Logger.Instance);
+            cassandraCluster = new CassandraCluster(LocalCassandraSettingsFactory.CreateSettings(), Logger.Instance);
             var cassandraSchemaActualizer = new CassandraSchemaActualizer(cassandraCluster, null, Logger.Instance);
             cassandraSchemaActualizer.ActualizeKeyspaces(new[]
                 {
@@ -68,26 +53,10 @@ namespace Cassandra.GlobalTimestamp.Tests
                 }, changeExistingKeyspaceMetadata : false);
         }
 
-        [OneTimeTearDown]
-        public static void TearDown()
-        {
-            cassandraNode.Stop();
-        }
-
-        private static string FindCassandraTemplateDirectory(string currentDir)
-        {
-            if (currentDir == null)
-                throw new InvalidOperationException("Failed to find cassandra templates directory");
-            var cassandraTemplateDirectory = Path.Combine(currentDir, cassandraTemplates);
-            return Directory.Exists(cassandraTemplateDirectory) ? cassandraTemplateDirectory : FindCassandraTemplateDirectory(Path.GetDirectoryName(currentDir));
-        }
-
         private const string ksName = "GlobalTimestampTests";
         private const string minTicksCfName = "MinTicks";
         private const string maxTicksCfName = "MaxTicks";
-        private const string cassandraTemplates = @"cassandra-local\cassandra";
 
-        private static LocalCassandraNode cassandraNode;
         private static CassandraCluster cassandraCluster;
     }
 }
